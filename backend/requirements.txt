@@ -1,0 +1,9 @@
+# Production dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-dotenv==1.0.0
+google-cloud-tasks==2.14.2
+google-cloud-firestore==2.13.1
+sendgrid==6.11.0
+pydantic==2.5.0
+email-validator==2.3.0

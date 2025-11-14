@@ -1,0 +1,15 @@
+{
+  "name": "user-registration-app-root",
+  "version": "1.0.0",
+  "description": "User registration app - root package for development scripts",
+  "private": true,
+  "scripts": {
+    "dev:all": "concurrently -n \"FRONTEND,BACKEND\" -c \"blue,green\" \"cd frontend && yarn dev\" \"cd backend && source venv/bin/activate && python app.py\"",
+    "dev:frontend": "cd frontend && yarn dev",
+    "dev:backend": "cd backend && source venv/bin/activate && python app.py"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+

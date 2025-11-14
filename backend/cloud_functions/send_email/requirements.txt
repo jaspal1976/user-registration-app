@@ -1,0 +1,4 @@
+sendgrid==6.11.0
+google-cloud-firestore==2.13.1
+functions-framework==3.5.0
+
