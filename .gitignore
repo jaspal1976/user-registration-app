@@ -22,7 +22,10 @@ firestore-debug.log
 ui-debug.log
 
 # Logs
+logs/
 *.log
+backend/logs/
+backend/*.log
 
 # Python
 __pycache__/

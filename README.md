@@ -1,8 +1,18 @@
 # User Registration Web App
 
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/jaspal1976/user-registration-app)
+
 A full-stack user registration application built with React.js (TypeScript) frontend and Python (FastAPI) backend, featuring Firestore integration and async email sending with full local development support.
 
-## 🚀 Quick Start
+##  Clone the Repository
+
+```bash
+git clone https://github.com/jaspal1976/user-registration-app.git
+cd user-registration-app
+```
+
+
+##  Quick Start
 
 For a quick setup guide, see [QUICKSTART.md](./QUICKSTART.md)
 
@@ -71,14 +81,7 @@ npm install -g firebase-tools
 
 ## Installation
 
-### 1. Clone the Repository
-
-```bash
-git clone <repository-url>
-cd user-registeraton
-```
-
-### 2. Install Frontend Dependencies
+### 1. Install Frontend Dependencies
 
 ```bash
 cd frontend
@@ -281,11 +284,6 @@ See [backend/README.md](./backend/README.md) for mode configuration details.
 # Deploy to Firebase Hosting
 ./scripts/deploy-frontend.sh firebase
 
-# Deploy to Vercel
-./scripts/deploy-frontend.sh vercel
-
-# Deploy to Netlify
-./scripts/deploy-frontend.sh netlify
 ```
 
 ### Backend Deployment

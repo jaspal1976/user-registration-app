@@ -72,15 +72,34 @@ pytest --cov
 backend/
 ├── app.py                 # FastAPI application
 ├── models.py              # Pydantic models
+├── logger_config.py      # Logging configuration
 ├── routers/               # API routes
 │   └── email_router.py
 ├── services/              # Business logic
 │   └── email_service.py
 ├── cloud_functions/       # GCP Cloud Functions
 │   └── send_email/
+├── logs/                  # Log files (auto-generated)
 └── tests/                 # Unit tests
     └── test_app.py
 ```
+
+## Logging
+
+The application uses structured logging with the following features:
+
+- **Console output**: All logs are printed to stdout
+- **File logging**: Logs are saved to `logs/app.log`
+- **Error logging**: Errors are saved to `logs/error.log`
+- **Log rotation**: Log files are rotated when they reach 10MB (keeps 5 backups)
+
+Log levels:
+- `DEBUG`: Detailed information for debugging
+- `INFO`: General informational messages
+- `WARNING`: Warning messages
+- `ERROR`: Error messages with stack traces
+
+To change log level, set `LOG_LEVEL` environment variable (default: `INFO`).
 
 ## Modes
 
