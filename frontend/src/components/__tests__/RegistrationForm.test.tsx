@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import RegistrationForm from '../RegistrationForm';
 import * as userService from '../../services/userService';
 
-// Mock the user service
 vi.mock('../../services/userService', () => ({
   registerUser: vi.fn(),
   triggerEmailSending: vi.fn(),
@@ -13,7 +12,6 @@ vi.mock('../../services/userService', () => ({
 describe('RegistrationForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Suppress console output in tests
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -49,19 +47,14 @@ describe('RegistrationForm', () => {
     const firstNameInput = screen.getByLabelText(/first name/i);
     const lastNameInput = screen.getByLabelText(/last name/i);
     
-    // Fill in all fields with invalid email
     await user.clear(emailInput);
     await user.type(emailInput, 'invalid-email');
     await user.type(firstNameInput, 'John');
     await user.type(lastNameInput, 'Doe');
 
     const submitButton = screen.getByRole('button', { name: /register/i });
-    
-    // Submit the form - this should trigger validation
     await user.click(submitButton);
 
-    // Wait for validation error to appear
-    // The error message should be displayed in a span with the error text
     await waitFor(() => {
       expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
     }, { timeout: 3000 });

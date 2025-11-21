@@ -3,12 +3,10 @@ import { registerUser, triggerEmailSending, UserData } from '../userService';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 
-// Mock Firebase App
 vi.mock('firebase/app', () => ({
   initializeApp: vi.fn(() => ({})),
 }));
 
-// Mock Firebase Firestore
 vi.mock('firebase/firestore', () => ({
   collection: vi.fn(),
   addDoc: vi.fn(),
@@ -17,26 +15,22 @@ vi.mock('firebase/firestore', () => ({
   serverTimestamp: vi.fn(() => ({ seconds: Date.now() / 1000 })),
 }));
 
-// Mock Firebase Auth
 vi.mock('firebase/auth', () => ({
   getAuth: vi.fn(() => ({})),
   connectAuthEmulator: vi.fn(),
 }));
 
-// Mock the firebase config module
 vi.mock('../../firebase/config', () => ({
   db: {},
   auth: {},
   app: {},
 }));
 
-// Mock fetch
 global.fetch = vi.fn() as typeof fetch;
 
 describe('userService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Suppress console.error in tests
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 

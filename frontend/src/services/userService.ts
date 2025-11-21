@@ -14,12 +14,6 @@ export interface EmailServiceResponse {
   error?: string;
 }
 
-/**
- * Registers a new user by saving their data to Firestore
- * @param userData - User registration data
- * @returns Document ID of the created user
- * @throws Error if registration fails
- */
 export async function registerUser(userData: UserData): Promise<string> {
   try {
     const userDoc = {
@@ -39,12 +33,6 @@ export async function registerUser(userData: UserData): Promise<string> {
   }
 }
 
-/**
- * Triggers async email sending via backend API
- * @param userId - Firestore document ID of the user
- * @param email - User's email address
- * @returns Response from email service
- */
 export async function triggerEmailSending(
   userId: string,
   email: string

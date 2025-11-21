@@ -1,7 +1,8 @@
 # Backend API
 
-FastAPI backend service for user registration with async email sending.
-See the cloud_functions/GCP_SETUP.md for GCP setup
+FastAPI backend for user registration with async email sending.
+
+For GCP setup, see [terraform/README.md](../../terraform/README.md)
 
 ## Setup
 
@@ -52,18 +53,10 @@ API docs available at: `http://localhost:5001/docs`
 
 ## Testing
 
-**Important**: Make sure the virtual environment is activated before running tests.
-
-Run tests:
+Activate venv first, then:
 ```bash
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 pytest
-```
-
-Run with coverage:
-```bash
-source venv/bin/activate
-pytest --cov
+pytest --cov  # with coverage
 ```
 
 ## Project Structure
@@ -86,23 +79,15 @@ backend/
 
 ## Logging
 
-The application uses structured logging with the following features:
+- Console output (stdout)
+- File logs: `logs/app.log`
+- Error logs: `logs/error.log`
+- Auto-rotation at 10MB (keeps 5 backups)
 
-- **Console output**: All logs are printed to stdout
-- **File logging**: Logs are saved to `logs/app.log`
-- **Error logging**: Errors are saved to `logs/error.log`
-- **Log rotation**: Log files are rotated when they reach 10MB (keeps 5 backups)
-
-Log levels:
-- `DEBUG`: Detailed information for debugging
-- `INFO`: General informational messages
-- `WARNING`: Warning messages
-- `ERROR`: Error messages with stack traces
-
-To change log level, set `LOG_LEVEL` environment variable (default: `INFO`).
+Set `LOG_LEVEL` env var (default: `INFO`)
 
 ## Modes
 
-- **Local**: Uses `asyncio` for async email processing
-- **GCP**: Uses Cloud Tasks to queue emails (see `GCP_SETUP.md`)
+- **Local**: Python asyncio
+- **GCP**: Cloud Tasks (see [terraform/README.md](../../terraform/README.md))
 

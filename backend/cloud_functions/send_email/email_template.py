@@ -1,6 +1,4 @@
-
 def get_welcome_email_html(user_id: str) -> str:
-  
     return f'''
     <html>
         <body>

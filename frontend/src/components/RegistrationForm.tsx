@@ -13,10 +13,6 @@ interface SubmitStatus {
   message: string;
 }
 
-/**
- * RegistrationForm component for user registration
- * Handles form submission, validation, and integration with Firestore and email service
- */
 export default function RegistrationForm(): JSX.Element {
   const [formData, setFormData] = useState<UserData>({
     email: '',
@@ -27,20 +23,11 @@ export default function RegistrationForm(): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus | null>(null);
 
-  /**
-   * Validates email format
-   * @param email - Email to validate
-   * @returns True if valid
-   */
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  /**
-   * Validates form data
-   * @returns True if valid
-   */
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -62,17 +49,13 @@ export default function RegistrationForm(): JSX.Element {
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Handles input changes
-   * @param e - Input change event
-   */
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field when user starts typing
+    
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({
         ...prev,
@@ -81,10 +64,6 @@ export default function RegistrationForm(): JSX.Element {
     }
   };
 
-  /**
-   * Handles form submission
-   * @param e - Form submit event
-   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setSubmitStatus(null);
@@ -96,13 +75,8 @@ export default function RegistrationForm(): JSX.Element {
     setIsSubmitting(true);
 
     try {
-      // Step 1: Save user to Firestore
       const userId = await registerUser(formData);
-      console.log('User registered with ID:', userId);
-
-      // Step 2: Trigger async email sending (delay handled in backend for local testing)
       await triggerEmailSending(userId, formData.email);
-      console.log('Email sending triggered');
 
       setSubmitStatus({
         type: 'success',

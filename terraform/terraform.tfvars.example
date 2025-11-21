@@ -1,0 +1,17 @@
+# Copy this file to terraform.tfvars and update with your values
+# terraform.tfvars is gitignored for security
+
+project_id = "your-gcp-project-id"
+region     = "us-central1"
+queue_name = "email-queue"
+
+# Optional: Deploy backend to Cloud Run
+deploy_backend_to_cloud_run = false
+backend_image_url          = ""  # e.g., "gcr.io/your-project/user-registration-api:latest"
+allow_public_backend_access = false
+
+# SendGrid configuration (will be stored in Secret Manager)
+# These can also be set via environment variables or terraform apply -var
+sendgrid_api_key   = ""  # Set via: terraform apply -var="sendgrid_api_key=your-key"
+sendgrid_from_email = "noreply@yourapp.com"
+

@@ -6,11 +6,8 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from email_template import get_welcome_email_html
 
-
 def send_email(request):
-    
     try:
-        # Parse request payload
         payload = request.get_json()
         if not payload:
             return {'error': 'No payload provided'}, 400
@@ -21,12 +18,10 @@ def send_email(request):
         if not user_id or not email:
             return {'error': 'userId and email are required'}, 400
         
-        # Get SendGrid API key
         sendgrid_api_key = os.environ.get('SENDGRID_API_KEY')
         if not sendgrid_api_key:
             return {'error': 'SENDGRID_API_KEY not configured'}, 500
         
-        # Prepare email
         from_email = os.environ.get('SENDGRID_FROM_EMAIL', 'noreply@yourapp.com')
         
         message = Mail(
@@ -36,11 +31,9 @@ def send_email(request):
             html_content=get_welcome_email_html(user_id)
         )
         
-        # Send email
         sg = SendGridAPIClient(sendgrid_api_key)
         response = sg.send(message)
         
-        # Update Firestore
         db = firestore.Client()
         user_ref = db.collection('users').document(user_id)
         user_ref.update({
