@@ -1,0 +1,92 @@
+services:
+  # Firebase Emulators
+  firebase-emulators:
+    image: node:20-alpine
+    container_name: firebase-emulators
+    working_dir: /app
+    volumes:
+      - ./firebase.json:/app/firebase.json:ro
+      - ./firestore.rules:/app/firestore.rules:ro
+      - firebase-emulator-data:/app/.firebase
+    ports:
+      - "4000:4000"  # Emulator UI
+      - "8080:8080"  # Firestore
+      - "9099:9099"  # Auth
+    command: >
+      sh -c "
+        apk add --no-cache wget openjdk17-jre &&
+        npm install -g firebase-tools@latest &&
+        firebase emulators:start --only auth,firestore,ui --project demo-project
+      "
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: user-registration-backend
+    ports:
+      - "5001:5001"
+    environment:
+      - USE_GCP=false
+      - EMAIL_MIN_DELAY_SECONDS=1.0
+      - LOG_LEVEL=INFO
+      - FIRESTORE_EMULATOR_HOST=firebase-emulators:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-emulators:9099
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - backend-logs:/app/logs
+    depends_on:
+      firebase-emulators:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/api/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: user-registration-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_FIREBASE_AUTH_EMULATOR_HOST=firebase-emulators:9099
+      - VITE_FIREBASE_FIRESTORE_EMULATOR_HOST=firebase-emulators:8080
+      - VITE_API_URL=http://backend:5001
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "yarn install && yarn dev --host 0.0.0.0"
+    depends_on:
+      backend:
+        condition: service_healthy
+      firebase-emulators:
+        condition: service_healthy
+    networks:
+      - app-network
+
+volumes:
+  firebase-emulator-data:
+  backend-logs:
+
+networks:
+  app-network:
+    driver: bridge
+
