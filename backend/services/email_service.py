@@ -1,4 +1,3 @@
-
 import os
 import json
 import asyncio
@@ -19,14 +18,25 @@ if USE_GCP:
 
 
 async def send_email_task(user_id: str, email: str) -> Dict[str, Any]:
-    logger.info(f"Processing email for user {user_id}")
+    logger.info("-" * 60)
+    logger.info(f"EMAIL JOB STARTED - Processing email for registered user")
+    logger.info(f"User ID: {user_id}")
+    logger.info(f"Email: {email}")
+    logger.info(f"Job execution started")
     
     try:
         sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
         
         if not sendgrid_api_key:
-            logger.info(f"[LOCAL] Simulating email to {email}")
+            logger.info(f"[LOCAL MODE] Simulating email send")
+            logger.info(f"Recipient: {email}")
+            logger.info(f"User ID: {user_id}")
+            logger.info(f"Processing (simulated delay)...")
             await asyncio.sleep(1)
+            logger.info(f"Email simulation completed successfully")
+            logger.info(f"User ID: {user_id}")
+            logger.info(f"Email: {email}")
+            logger.info("-" * 60)
             return {
                 'success': True,
                 'messageId': f'msg-{user_id}',
@@ -36,31 +46,43 @@ async def send_email_task(user_id: str, email: str) -> Dict[str, Any]:
             }
         
         from_email = os.getenv('SENDGRID_FROM_EMAIL', 'noreply@yourapp.com')
-        logger.info(f"Sending email via SendGrid to {email}")
+        logger.info(f"[SENDGRID] Sending email via SendGrid")
+        logger.info(f"From: {from_email}")
+        logger.info(f"To: {email}")
+        logger.info(f"User ID: {user_id}")
+        
+        html_content = f'''
+        <html>
+            <body>
+                <h1>Welcome!</h1>
+                <p>Thank you for registering with us!</p>
+                <p>Your user ID: {user_id}</p>
+                <p>We're excited to have you on board.</p>
+            </body>
+        </html>
+        '''
         
         message = Mail(
             from_email=from_email,
             to_emails=email,
             subject='Welcome to Our App!',
-            html_content=f'''
-            <html>
-                <body>
-                    <h1>Welcome!</h1>
-                    <p>Thank you for registering with us!</p>
-                    <p>Your user ID: {user_id}</p>
-                    <p>We're excited to have you on board.</p>
-                </body>
-            </html>
-            '''
+            html_content=html_content
         )
         
         loop = asyncio.get_event_loop()
         sg = SendGridAPIClient(sendgrid_api_key)
+        logger.info(f"   → Sending email through SendGrid API...")
         response = await loop.run_in_executor(None, sg.send, message)
-        logger.info(f"Email sent. Status: {response.status_code}")
+        logger.info(f"Email sent successfully via SendGrid")
+        logger.info(f"Status Code: {response.status_code}")
+        logger.info(f"User ID: {user_id}")
+        logger.info(f"Email: {email}")
+        logger.info("-" * 60)
         
         if USE_GCP:
             try:
+                logger.info(f"Updating Firestore with email status")
+                logger.info(f"User ID: {user_id}")
                 db = FirestoreClient()
                 user_ref = db.collection('users').document(user_id)
                 user_ref.update({
@@ -68,6 +90,9 @@ async def send_email_task(user_id: str, email: str) -> Dict[str, Any]:
                     'emailSentAt': FirestoreClient.SERVER_TIMESTAMP,
                     'emailMessageId': str(response.status_code)
                 })
+                logger.info(f"Firestore updated successfully")
+                logger.info(f"User ID: {user_id}")
+                logger.info(f"Email sent status: True")
             except Exception as e:
                 logger.warning(f"Could not update Firestore: {str(e)}", exc_info=True)
         
@@ -81,7 +106,11 @@ async def send_email_task(user_id: str, email: str) -> Dict[str, Any]:
             'mode': mode
         }
     except Exception as e:
-        logger.error(f"Error sending email for {user_id}: {str(e)}", exc_info=True)
+        logger.error(f"ERROR in email job execution")
+        logger.error(f"User ID: {user_id}")
+        logger.error(f"Email: {email}")
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        logger.info("-" * 60)
         return {
             'success': False,
             'error': str(e),
@@ -132,18 +161,24 @@ class EmailService:
         logger.info("Local mode initialized")
     
     async def queue_email(self, user_id: str, email: str) -> str:
-        logger.info(f"Queueing email for user {user_id}")
+        logger.info(f"Queueing email job - User: {user_id}, Email: {email}")
         try:
             if USE_GCP and hasattr(self, 'tasks_client'):
+                logger.info(f"Using GCP Cloud Tasks for job creation")
                 return self._queue_gcp_task(user_id, email)
             else:
+                logger.info(f"Using local asyncio for job creation")
                 return await self._queue_local_task(user_id, email)
         except Exception as e:
-            logger.error(f"Failed to queue email for {user_id}: {str(e)}", exc_info=True)
+            logger.error(f"Failed to queue email job for {user_id}: {str(e)}", exc_info=True)
             raise Exception(f"Failed to queue email task: {str(e)}")
     
     def _queue_gcp_task(self, user_id: str, email: str) -> str:
-        logger.info(f"Creating Cloud Task for {user_id}")
+        logger.info(f"Creating GCP Cloud Task job")
+        logger.info(f"User ID: {user_id}")
+        logger.info(f"Email: {email}")
+        logger.info(f"Queue: {self.queue_name}")
+        logger.info(f"Handler URL: {self.email_handler_url}")
         
         task_payload = {
             'userId': user_id,
@@ -168,21 +203,33 @@ class EmailService:
             }
         )
         
-        logger.info(f"Cloud Task created: {response.name}")
+        logger.info(f"GCP Cloud Task job created successfully")
+        logger.info(f"Task ID: {response.name}")
+        logger.info(f"User ID: {user_id}")
         return response.name
     
     async def _queue_local_task(self, user_id: str, email: str) -> str:
         import time
         
+        logger.info(f"Creating local async email job")
+        logger.info(f"User ID: {user_id}")
+        logger.info(f"Email: {email}")
+        
         start_time = time.time()
         min_delay = float(os.getenv('EMAIL_MIN_DELAY_SECONDS', '1.0'))
         
         task_id = f'task-{user_id}-{email}'
+        logger.info(f"Task ID: {task_id}")
+        logger.info(f"Starting background email processing...")
+        
         asyncio.create_task(send_email_task(user_id, email))
         
         elapsed_time = time.time() - start_time
         if elapsed_time < min_delay:
             await asyncio.sleep(min_delay - elapsed_time)
         
-        logger.info(f"Local task queued: {task_id}")
+        logger.info(f"Local email job created and queued successfully")
+        logger.info(f"Task ID: {task_id}")
+        logger.info(f"User ID: {user_id}")
+        logger.info(f"Job is now processing in background")
         return task_id

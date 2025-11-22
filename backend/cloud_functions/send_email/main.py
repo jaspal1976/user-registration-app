@@ -1,6 +1,4 @@
-
 import os
-import json
 from google.cloud import firestore
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail

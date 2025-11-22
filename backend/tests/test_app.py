@@ -10,9 +10,15 @@ from fastapi.testclient import TestClient
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
-from app import app
+import importlib.util
+app_file = backend_dir / "app.py"
+spec = importlib.util.spec_from_file_location("app_module", app_file)
+app_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(app_module)
+
 from services.email_service import EmailService, send_email_task
 
+app = app_module.app
 client = TestClient(app)
 
 
@@ -181,7 +187,7 @@ class TestSendEmailTask:
 
     @pytest.mark.asyncio
     async def test_send_email_task_sendgrid_error(self):
-        """Test email task execution with SendGrid error."""
+        
         mock_sg_instance = MagicMock()
         mock_sg_instance.send.side_effect = Exception('SendGrid API error')
         
@@ -206,7 +212,7 @@ class TestSendEmailTask:
 
     @pytest.mark.asyncio
     async def test_send_email_task_firestore_update_error(self):
-        """Test email task execution with Firestore update error."""
+        
         pytest.skip("Requires module reloading - covered by integration tests")
         mock_response = MagicMock()
         mock_response.status_code = 202
@@ -246,11 +252,10 @@ class TestSendEmailTask:
 
 
 class TestEmailService:
-    """Tests for EmailService class."""
-
+    
     @pytest.mark.asyncio
     async def test_queue_email_success_local(self):
-        """Test successful email queuing in local mode."""
+        
         with patch('services.email_service.USE_GCP', False):
             service = EmailService()
             with patch.object(service, '_queue_local_task', new_callable=AsyncMock) as mock_queue:
@@ -263,7 +268,7 @@ class TestEmailService:
 
     @pytest.mark.asyncio
     async def test_queue_email_success_gcp(self):
-        """Test successful email queuing in GCP mode."""
+        
         service = EmailService()
         service.tasks_client = MagicMock()
         
@@ -278,7 +283,7 @@ class TestEmailService:
 
     @pytest.mark.asyncio
     async def test_queue_email_failure(self):
-        """Test email queuing with error."""
+        
         with patch('services.email_service.USE_GCP', False):
             service = EmailService()
             with patch.object(service, '_queue_local_task', new_callable=AsyncMock) as mock_queue:
@@ -290,7 +295,7 @@ class TestEmailService:
                 assert 'Failed to queue email task' in str(exc_info.value)
 
     def test_init_gcp_success(self):
-        """Test GCP initialization success."""
+        
         with patch.dict(os.environ, {
             'USE_GCP': 'true',
             'GCP_PROJECT_ID': 'test-project',
@@ -315,7 +320,7 @@ class TestEmailService:
                 assert service.queue_name == 'test-queue'
 
     def test_init_gcp_failure_fallback_to_local(self):
-        """Test GCP initialization failure falls back to local mode."""
+       
         with patch.dict(os.environ, {'USE_GCP': 'true'}, clear=False):
             with patch('services.email_service.tasks_v2', create=True) as mock_tasks_v2:
                 mock_tasks_v2.CloudTasksClient.side_effect = Exception('GCP init error')
@@ -347,7 +352,7 @@ class TestEmailService:
                                 mock_sleep.assert_called_once()
 
     def test_queue_gcp_task(self):
-        """Test GCP task queuing."""
+        
         with patch.dict(os.environ, {
             'USE_GCP': 'true',
             'GCP_PROJECT_ID': 'test-project',

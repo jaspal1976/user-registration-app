@@ -13,13 +13,15 @@ cd user-registration-app
 
 ## Quick Start (Docker - Recommended)
 
+**Prerequisites:** Install [Docker](https://www.docker.com/get-started) and Docker Compose (included with Docker Desktop).
+
 Start everything with one command:
 
 ```bash
 ./scripts/docker-start.sh start
 ```
 
-This starts:
+This starts below end point after couple of seconds:
 - Frontend (http://localhost:3000)
 - Backend API (http://localhost:5001)
 - Firebase Emulators (http://localhost:4000)
@@ -69,13 +71,36 @@ yarn dev:all
 
 ## Testing
 
-**Frontend:**
+**Using Docker (Recommended):**
 ```bash
-cd frontend && yarn test
+# Run all tests
+./scripts/docker-start.sh test
+
+# Run backend tests only
+./scripts/docker-start.sh test:backend
+
+# Run frontend tests only
+./scripts/docker-start.sh test:frontend
 ```
 
-**Backend:**
+**Or using Docker Compose directly:**
 ```bash
+# Backend tests
+docker compose exec backend python -m pytest -v
+
+# Frontend tests
+docker compose exec frontend yarn test --run
+
+# View backend logs only
+docker compose logs -f backend
+```
+
+**Local (without Docker):**
+```bash
+# Frontend
+cd frontend && yarn test
+
+# Backend
 cd backend
 source venv/bin/activate
 pytest

@@ -1,6 +1,5 @@
 
 import os
-import json
 import functions_framework
 from google.cloud import firestore
 from sendgrid import SendGridAPIClient
@@ -12,7 +11,7 @@ from email_template import get_welcome_email_html
 def send_email(request):
     
     try:
-        # Parse request payload
+        
         payload = request.get_json()
         if not payload:
             return {'error': 'No payload provided'}, 400

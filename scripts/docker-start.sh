@@ -80,6 +80,67 @@ stop_services() {
     echo -e "${GREEN}Services stopped${NC}"
 }
 
+test_backend() {
+    echo -e "${BLUE}Running backend tests...${NC}"
+    echo ""
+    
+    # Check if containers are running
+    if ! $DOCKER_COMPOSE ps backend 2>/dev/null | grep -q "Up"; then
+        echo -e "${YELLOW}Starting required services...${NC}"
+        $DOCKER_COMPOSE up -d firebase-emulators backend 2>&1 | grep -v "already in use" || true
+        echo -e "${YELLOW}Waiting for services to be ready...${NC}"
+        sleep 10
+    fi
+    
+    echo -e "${BLUE}Executing backend tests...${NC}"
+    echo ""
+    $DOCKER_COMPOSE exec -T backend python -m pytest -v
+}
+
+test_frontend() {
+    echo -e "${BLUE}Running frontend tests...${NC}"
+    echo ""
+    
+    # Check if containers are running
+    if ! $DOCKER_COMPOSE ps frontend | grep -q "Up"; then
+        echo -e "${YELLOW}Starting required services...${NC}"
+        $DOCKER_COMPOSE up -d firebase-emulators frontend
+        echo -e "${YELLOW}Waiting for services to be ready...${NC}"
+        sleep 10
+    fi
+    
+    echo -e "${BLUE}Executing frontend tests...${NC}"
+    echo ""
+    $DOCKER_COMPOSE exec -T frontend yarn test --run
+}
+
+test_services() {
+    local target="${1:-all}"
+    
+    case "$target" in
+        backend)
+            test_backend
+            ;;
+        frontend)
+            test_frontend
+            ;;
+        all)
+            echo -e "${BLUE}Running all tests...${NC}"
+            echo ""
+            test_backend
+            echo ""
+            echo -e "${BLUE}--- Frontend Tests ---${NC}"
+            echo ""
+            test_frontend
+            ;;
+        *)
+            echo -e "${RED}Unknown test target: $target${NC}"
+            echo "Available: backend, frontend, all"
+            exit 1
+            ;;
+    esac
+}
+
 case "${1:-start}" in
     start)
         start_services
@@ -103,8 +164,18 @@ case "${1:-start}" in
         docker system prune -f
         echo -e "${GREEN}Cleanup complete${NC}"
         ;;
+    test)
+        test_services "${2:-all}"
+        ;;
     *)
-        echo "Usage: $0 {start|stop|restart|logs|status|clean}"
-        exit 1
+        # Handle test:backend and test:frontend
+        if [[ "$1" == "test:backend" ]]; then
+            test_backend
+        elif [[ "$1" == "test:frontend" ]]; then
+            test_frontend
+        else
+            echo "Usage: $0 {start|stop|restart|logs|status|clean|test|test:backend|test:frontend}"
+            exit 1
+        fi
         ;;
 esac
